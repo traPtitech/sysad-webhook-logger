@@ -1,0 +1,26 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v*.*.*
+    branches-ignore:
+      - '**'
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+    - name: deploy
+      run: gcloud functions deploy sysad-webhook-logger --quiet --runtime nodejs10 --trigger-http --entry-point webhook --memory 256MB --region asia-northeast1 --set-env-vars GITHUB_SECRET=$GITHUB_SECRET,WEBHOOK_SECRET=$WEBHOOK_SECRET,GITEA_SECRET=$GITEA_SECRET
+      env:
+        GITHUB_SECRET: ${{ secrets.WEBHOOK_GITHUB_SECRET }}
+        WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        GITEA_SECRET: ${{ secrets.GITEA_SECRET }}
