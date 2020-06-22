@@ -10,8 +10,9 @@ class HTTPError extends Error {
   }
 }
 
-const GITHUB_SECRET = process.env.GITHUB_SECRET || ''
+const WEBHOOK_ID = '3250f68e-6a99-4802-8614-033a0ec6eeef'
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
+const GITHUB_SECRET = process.env.GITHUB_SECRET || ''
 const GITEA_SECRET = process.env.GITEA_SECRET
 
 const channelIDs = {
@@ -37,18 +38,15 @@ const sendMessage = (channelID, text) => {
   const hmac = crypto.createHmac('sha1', WEBHOOK_SECRET)
   hmac.update(text)
 
-  return fetch(
-    'https://q.trap.jp/api/v3/webhooks/3250f68e-6a99-4802-8614-033a0ec6eeef',
-    {
-      method: 'POST',
-      body: text,
-      headers: {
-        'X-TRAQ-Signature': hmac.digest('hex'),
-        'X-TRAQ-Channel-Id': channelID,
-        'Content-Type': 'text/plain'
-      }
+  return fetch(`https://q.trap.jp/api/v3/webhooks/${WEBHOOK_ID}`, {
+    method: 'POST',
+    body: text,
+    headers: {
+      'X-TRAQ-Signature': hmac.digest('hex'),
+      'X-TRAQ-Channel-Id': channelID,
+      'Content-Type': 'text/plain'
     }
-  )
+  })
 }
 
 const format = text =>
