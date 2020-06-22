@@ -1,0 +1,8 @@
+.gitignore
+.gitattributes
+.git
+.gcloudignore
+.github
+.eslintrc
+.prettierrc
+LICENSE
