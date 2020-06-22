@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint \"**/*.js\""
   },
   "author": "traP",
   "license": "MIT",
@@ -14,5 +14,11 @@
   "engines": {
     "node": "10<="
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "eslint": "^7.3.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5"
+  }
 }
