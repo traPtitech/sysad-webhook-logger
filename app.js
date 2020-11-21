@@ -222,11 +222,15 @@ PR編集者: [${user.login}](${user.html_url})
     const pr = body.pull_request
     const user = pr.user
     const content = format(pr.body)
+    const reviewers = pr.requested_reviewers
 
     const text =
       `## PR[${pr.title}](${pr.html_url})でレビューがリクエストされました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 リクエストした人: [${user.login}](${user.html_url})
+リクエストされた人: ${reviewers
+        .map(reviewer => `[${reviewer.login}](${reviewer.html_url})`)
+        .join(', ')}
 
 ---
 ` + content
