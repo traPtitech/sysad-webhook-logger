@@ -261,7 +261,7 @@ PR編集者: [${user.login}](${user.html_url})
     const content = format(comment.body)
 
     const text =
-      `## PR[${pr.title}](${pr.html_url})がレビューコメントが追加されました
+      `## PR[${pr.title}](${pr.html_url})にレビューコメントが追加されました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 コメントした人: [${user.login}](${user.html_url})
 
