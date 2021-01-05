@@ -21,6 +21,17 @@ const channelIDs = {
   '#t/S/l/pr': 'ee715867-d978-447b-a4fd-95071b1dbcef'
 }
 
+// user.html_urlで指定
+// コメントが追加/編集されてもメッセージ投稿しないユーザー
+const commentIgnoredUsers = [
+  'https://github.com/apps/dependabot',
+  'https://github.com/apps/codecov'
+]
+// PRの本文を省略するユーザー
+const prBodyOmittedUsers = ['https://github.com/apps/dependabot']
+// PRの編集がされてもメッセージを投稿しないユーザー
+const prEditIgnoredUsers = ['https://github.com/apps/dependabot']
+
 const verifyBody = (signature, body) => {
   const payload = JSON.stringify(body)
   const sign = `sha1=${crypto
@@ -49,17 +60,7 @@ const sendMessage = (channelID, text) => {
   })
 }
 
-const format = text =>
-  text
-    .replace(/<details>.+?<\/details>/gs, '')
-    .replace(
-      /\[\/\/\]: # \(dependabot-start\).+\[\/\/\]: # \(dependabot-end\)/s,
-      ''
-    )
-    .replace(
-      /\[\/\/\]: # \(dependabot-automerge-start\).+\[\/\/\]: # \(dependabot-automerge-end\)/s,
-      ''
-    )
+const format = text => text.replace(/<details>.+?<\/details>/gs, '')
 
 exports.webhook = async (req, res) => {
   const headers = req.headers
@@ -85,14 +86,18 @@ exports.webhook = async (req, res) => {
     const user = pr.user
     const content = format(pr.body)
 
-    const text =
-      `## [${pr.title}](${pr.html_url})がマージされました
+    let text = `## [${pr.title}](${pr.html_url})がマージされました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 PR作成者: [${user.login}](${user.html_url})
 マージした人: [${body.sender.login}](${body.sender.html_url})
+`
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
 
 ---
-` + content
+      ` + content
+    }
 
     await sendMessage(channelIDs['#t/S/logs'], text)
     res.send('OK')
@@ -162,6 +167,11 @@ issueを開けた人: [${user.login}](${user.html_url})
     const user = comment.user
     const content = format(comment.body)
 
+    if (commentIgnoredUsers.includes(user.html_url)) {
+      res.send('OK')
+      return
+    }
+
     const text =
       `## issue[${issue.title}](${
         issue.html_url || issue.url
@@ -179,6 +189,11 @@ issueを開けた人: [${user.login}](${user.html_url})
     const user = comment.user
     const content = format(comment.body)
 
+    if (commentIgnoredUsers.includes(user.html_url)) {
+      res.send('OK')
+      return
+    }
+
     const text =
       `## issue[${issue.title}](${
         issue.html_url || issue.url
@@ -195,13 +210,19 @@ issueを開けた人: [${user.login}](${user.html_url})
     const user = pr.user
     const content = format(pr.body)
 
-    const text =
-      `## 新しいPR[${pr.title}](${pr.html_url})が作成されました
+    let text = `## 新しいPR[${pr.title}](${pr.html_url})が作成されました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 PR作成者: [${user.login}](${user.html_url})
+`
+
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
 
 ---
-` + content
+  ` + content
+    }
+
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
   } else if (event === 'pull_request' && body.action === 'edited') {
@@ -209,13 +230,24 @@ PR作成者: [${user.login}](${user.html_url})
     const user = pr.user
     const content = format(pr.body)
 
-    const text =
-      `## PR[${pr.title}](${pr.html_url})が編集されました
+    if (prEditIgnoredUsers.includes(user.html_url)) {
+      res.send('OK')
+      return
+    }
+
+    let text = `## PR[${pr.title}](${pr.html_url})が編集されました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 PR編集者: [${user.login}](${user.html_url})
+`
+
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
 
 ---
 ` + content
+    }
+
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
   } else if (event === 'pull_request' && body.action === 'review_requested') {
@@ -224,16 +256,24 @@ PR編集者: [${user.login}](${user.html_url})
     const content = format(pr.body)
     const reviewers = pr.requested_reviewers
 
-    const text =
-      `## PR[${pr.title}](${pr.html_url})でレビューがリクエストされました
+    let text = `## PR[${pr.title}](${
+      pr.html_url
+    })でレビューがリクエストされました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 リクエストした人: [${user.login}](${user.html_url})
 リクエストされた人: ${reviewers
-        .map(reviewer => `[${reviewer.login}](${reviewer.html_url})`)
-        .join(', ')}
+      .map(reviewer => `[${reviewer.login}](${reviewer.html_url})`)
+      .join(', ')}
+`
 
----
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
+
+    ---
 ` + content
+    }
+
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
   } else if (event === 'pull_request_review' && body.action === 'submitted') {
@@ -242,13 +282,19 @@ PR編集者: [${user.login}](${user.html_url})
     const user = review.user
     const content = review.body ? format(review.body) : ''
 
-    const text =
-      `## PR[${pr.title}](${pr.html_url})がレビューされました
+    let text = `## PR[${pr.title}](${pr.html_url})がレビューされました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 レビューした人: [${user.login}](${user.html_url})
+`
+
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
 
 ---
 ` + content
+    }
+
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
   } else if (
@@ -260,13 +306,19 @@ PR編集者: [${user.login}](${user.html_url})
     const user = comment.user
     const content = format(comment.body)
 
-    const text =
-      `## PR[${pr.title}](${pr.html_url})にレビューコメントが追加されました
+    let text = `## PR[${pr.title}](${pr.html_url})にレビューコメントが追加されました
 リポジトリ: [${body.repository.name}](${body.repository.html_url})
 コメントした人: [${user.login}](${user.html_url})
+`
+
+    if (!prBodyOmittedUsers.includes(user.html_url)) {
+      text +=
+        `
 
 ---
 ` + content
+    }
+
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
   } else {
