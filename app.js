@@ -69,6 +69,29 @@ const sendMessage = (channelID, text) => {
 
 const format = text => text.replace(/<details>.+?<\/details>/gs, '')
 
+const createMdLink = (alt, href) => `[${alt}](${href})`
+const createIssueLink = issue =>
+  createMdLink(issue.title, issue.html_url || issue.url)
+const createRepoLink = repo => createMdLink(repo.name, repo.html_url)
+const createUserLink = user => createMdLink(user.login, user.html_url)
+
+const createText = (title, headData, content) => {
+  const res = []
+  res.push(`## ${title}`)
+  for (const key in headData) {
+    res.push(`${key}: ${headData[key]}`)
+  }
+  if (content) {
+    res.push('')
+    res.push('---')
+    res.push(content)
+  }
+  return res.join('\n')
+}
+
+const omitIfNeeded = (user, content) =>
+  !prBodyOmittedUsers.includes(user.html_url) ? content : undefined
+
 exports.webhook = async (req, res) => {
   const headers = req.headers
   const body = req.body
@@ -93,18 +116,15 @@ exports.webhook = async (req, res) => {
     const user = pr.user
     const content = format(pr.body)
 
-    let text = `## [${pr.title}](${pr.html_url})がマージされました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-PR作成者: [${user.login}](${user.html_url})
-マージした人: [${body.sender.login}](${body.sender.html_url})
-`
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
----
-      ` + content
-    }
+    const text = createText(
+      `${createIssueLink(pr)}がマージされました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        PR作成者: createUserLink(user),
+        マージした人: createUserLink(body.sender)
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/logs'], text)
     res.send('OK')
@@ -113,15 +133,15 @@ PR作成者: [${user.login}](${user.html_url})
     const user = issue.user
     const content = format(issue.body)
 
-    const text =
-      `## 新しいissue[${issue.title}](${
-        issue.html_url || issue.url
-      })が作成されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-issue作成者: [${user.login}](${user.html_url})
+    const text = createText(
+      `新しいissue${createIssueLink(issue)}が作成されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        issue作成者: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'issues' && body.aciton === 'edited') {
@@ -129,13 +149,15 @@ issue作成者: [${user.login}](${user.html_url})
     const user = issue.user
     const content = format(issue.body)
 
-    const text =
-      `## issue[${issue.title}](${issue.html_url || issue.url})が編集されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-issue編集者: [${user.login}](${user.html_url})
+    const text = createText(
+      `issue${createIssueLink(issue)}が編集されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        issue編集者: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'issues' && body.action === 'closed') {
@@ -143,13 +165,15 @@ issue編集者: [${user.login}](${user.html_url})
     const user = body.sender
     const content = format(issue.body)
 
-    const text =
-      `## issue[${issue.title}](${issue.html_url || issue.url})が閉じられました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-issueを閉じた人: [${user.login}](${user.html_url})
+    const text = createText(
+      `issue${createIssueLink(issue)}が閉じられました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        issueを閉じた人: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'issues' && body.action === 'reopened') {
@@ -157,15 +181,15 @@ issueを閉じた人: [${user.login}](${user.html_url})
     const user = body.sender
     const content = format(issue.body)
 
-    const text =
-      `## issue[${issue.title}](${
-        issue.html_url || issue.url
-      })が再び開かれました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-issueを開けた人: [${user.login}](${user.html_url})
+    const text = createText(
+      `issue${createIssueLink(issue)}が再び開かれました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        issueを開けた人: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'issue_comment' && body.action === 'created') {
@@ -179,15 +203,15 @@ issueを開けた人: [${user.login}](${user.html_url})
       return
     }
 
-    const text =
-      `## issue[${issue.title}](${
-        issue.html_url || issue.url
-      })にコメントが追加されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-コメントした人: [${user.login}](${user.html_url})
+    const text = createText(
+      `issue${createIssueLink(issue)}にコメントが追加されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        コメントした人: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'issue_comment' && body.action === 'edited') {
@@ -201,15 +225,15 @@ issueを開けた人: [${user.login}](${user.html_url})
       return
     }
 
-    const text =
-      `## issue[${issue.title}](${
-        issue.html_url || issue.url
-      })のコメントが変更されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-コメントした人: [${user.login}](${user.html_url})
+    const text = createText(
+      `issue${createIssueLink(issue)}のコメントが変更されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        コメントした人: createUserLink(user)
+      },
+      content
+    )
 
----
-` + content
     await sendMessage(channelIDs['#t/S/l/issue'], text)
     res.send('OK')
   } else if (event === 'pull_request' && body.action === 'opened') {
@@ -217,18 +241,14 @@ issueを開けた人: [${user.login}](${user.html_url})
     const user = pr.user
     const content = format(pr.body)
 
-    let text = `## 新しいPR[${pr.title}](${pr.html_url})が作成されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-PR作成者: [${user.login}](${user.html_url})
-`
-
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
----
-  ` + content
-    }
+    const text = createText(
+      `新しいPR${createIssueLink(pr)}が作成されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        PR作成者: createUserLink(user)
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
@@ -242,18 +262,14 @@ PR作成者: [${user.login}](${user.html_url})
       return
     }
 
-    let text = `## PR[${pr.title}](${pr.html_url})が編集されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-PR編集者: [${user.login}](${user.html_url})
-`
-
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
----
-` + content
-    }
+    const text = createText(
+      `PR${createIssueLink(pr)}が編集されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        PR編集者: createUserLink(user)
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
@@ -263,23 +279,15 @@ PR編集者: [${user.login}](${user.html_url})
     const content = format(pr.body)
     const reviewers = pr.requested_reviewers
 
-    let text = `## PR[${pr.title}](${
-      pr.html_url
-    })でレビューがリクエストされました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-リクエストした人: [${user.login}](${user.html_url})
-リクエストされた人: ${reviewers
-      .map(reviewer => `[${reviewer.login}](${reviewer.html_url})`)
-      .join(', ')}
-`
-
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
-    ---
-` + content
-    }
+    const text = createText(
+      `PR${createIssueLink(pr)}でレビューがリクエストされました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        リクエストした人: createUserLink(user),
+        リクエストされた人: reviewers.map(createUserLink).join(', ')
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
@@ -289,18 +297,14 @@ PR編集者: [${user.login}](${user.html_url})
     const user = review.user
     const content = review.body ? format(review.body) : ''
 
-    let text = `## PR[${pr.title}](${pr.html_url})がレビューされました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-レビューした人: [${user.login}](${user.html_url})
-`
-
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
----
-` + content
-    }
+    const text = createText(
+      `PR${createIssueLink(pr)}がレビューされました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        レビューした人: createUserLink(user)
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
@@ -313,18 +317,14 @@ PR編集者: [${user.login}](${user.html_url})
     const user = comment.user
     const content = format(comment.body)
 
-    let text = `## PR[${pr.title}](${pr.html_url})にレビューコメントが追加されました
-リポジトリ: [${body.repository.name}](${body.repository.html_url})
-コメントした人: [${user.login}](${user.html_url})
-`
-
-    if (!prBodyOmittedUsers.includes(user.html_url)) {
-      text +=
-        `
-
----
-` + content
-    }
+    const text = createText(
+      `PR${createIssueLink(pr)}にレビューコメントが追加されました`,
+      {
+        リポジトリ: createRepoLink(body.repository),
+        コメントした人: createUserLink(user)
+      },
+      omitIfNeeded(user, content)
+    )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
     res.send('OK')
