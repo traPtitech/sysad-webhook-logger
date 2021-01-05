@@ -12,7 +12,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
           registry-url: 'https://registry.npmjs.org'
       - name: check npm ci
         run: npm ci
@@ -30,7 +30,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
           registry-url: 'https://registry.npmjs.org'
       - uses: actions/cache@v1
         with:
