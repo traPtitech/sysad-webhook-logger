@@ -20,10 +20,6 @@ jobs:
         runtime: nodejs12
         entry_point: webhook
         region: asia-northeast1
-        service_account_key: ${{ secrets.GCP_SA_KEY }}
-        env_vars: GITHUB_SECRET=$GITHUB_SECRET,WEBHOOK_SECRET=$WEBHOOK_SECRET,GITEA_SECRET=$GITEA_SECRET
+        credentials: ${{ secrets.GCP_SA_KEY }}
+        env_vars: GITHUB_SECRET=${{ secrets.WEBHOOK_GITHUB_SECRET }},WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }},GITEA_SECRET=${{ secrets.GITEA_SECRET }}
         project_id: ${{ secrets.GCP_PROJECT_ID }}
-      env:
-        GITHUB_SECRET: ${{ secrets.WEBHOOK_GITHUB_SECRET }}
-        WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
-        GITEA_SECRET: ${{ secrets.GITEA_SECRET }}
