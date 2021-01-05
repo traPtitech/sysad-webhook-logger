@@ -25,12 +25,19 @@ const channelIDs = {
 // コメントが追加/編集されてもメッセージ投稿しないユーザー
 const commentIgnoredUsers = [
   'https://github.com/apps/dependabot',
+  'https://github.com/apps/dependabot-preview',
   'https://github.com/apps/codecov'
 ]
 // PRの本文を省略するユーザー
-const prBodyOmittedUsers = ['https://github.com/apps/dependabot']
+const prBodyOmittedUsers = [
+  'https://github.com/apps/dependabot',
+  'https://github.com/apps/dependabot-preview'
+]
 // PRの編集がされてもメッセージを投稿しないユーザー
-const prEditIgnoredUsers = ['https://github.com/apps/dependabot']
+const prEditIgnoredUsers = [
+  'https://github.com/apps/dependabot',
+  'https://github.com/apps/dependabot-preview'
+]
 
 const verifyBody = (signature, body) => {
   const payload = JSON.stringify(body)
