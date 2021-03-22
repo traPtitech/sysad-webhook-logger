@@ -17,7 +17,7 @@ jobs:
       uses: google-github-actions/deploy-cloud-functions@main
       with:
         name: sysad-webhook-logger
-        runtime: nodejs12
+        runtime: nodejs14
         entry_point: webhook
         memory_mb: 128
         region: asia-northeast1

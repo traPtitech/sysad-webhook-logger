@@ -12,7 +12,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '14'
       - name: check npm ci
         run: npm ci
       - uses: actions/cache@v2
@@ -29,7 +29,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '12'
+          node-version: '14'
       - uses: actions/cache@v2
         with:
           path: ~/.npm
