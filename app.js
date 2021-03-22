@@ -1,6 +1,6 @@
-const crypto = require('crypto')
-const fetch = require('node-fetch')
-const { STATUS_CODES } = require('http')
+import crypto from 'crypto'
+import fetch from 'node-fetch'
+import { STATUS_CODES } from 'http'
 
 class HTTPError extends Error {
   constructor(code, message = STATUS_CODES[code]) {
@@ -92,7 +92,7 @@ const createText = (title, headData, content) => {
 const omitIfNeeded = (user, content) =>
   !prBodyOmittedUsers.includes(user.html_url) ? content : undefined
 
-exports.webhook = async (req, res) => {
+export const webhook = async (req, res) => {
   const headers = req.headers
   const body = req.body
   const event = headers['x-github-event']
