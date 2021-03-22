@@ -19,6 +19,7 @@ jobs:
         name: sysad-webhook-logger
         runtime: nodejs12
         entry_point: webhook
+        memory_mb: 128
         region: asia-northeast1
         credentials: ${{ secrets.GCP_SA_KEY }}
         env_vars: GITHUB_SECRET=${{ secrets.WEBHOOK_GITHUB_SECRET }},WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }},GITEA_SECRET=${{ secrets.GITEA_SECRET }}
