@@ -39,10 +39,10 @@ const prEditIgnoredUsers = [
   'https://github.com/apps/dependabot-preview'
 ]
 
-const verifyBody = (signature, body) => {
+const verifyBody = (secret, signature, body) => {
   const payload = JSON.stringify(body)
   const sign = `sha1=${crypto
-    .createHmac('sha1', GITHUB_SECRET)
+    .createHmac('sha1', secret)
     .update(payload)
     .digest('hex')}`
 
@@ -98,12 +98,12 @@ export const webhook = async (req, res) => {
   const event = headers['x-github-event']
 
   if (headers['x-gitea-delivery']) {
-    if (body.secret !== GITEA_SECRET) {
-      throw new HTTPError(403, 'Secret mis-match')
+    if (!verifyBody(GITEA_SECRET, headers['x-hub-signature'] || '', body)) {
+      throw new HTTPError(403, 'X-Hub-Signature mis-match (Gitea)')
     }
   } else {
-    if (!verifyBody(headers['x-hub-signature'] || '', body)) {
-      throw new HTTPError(403, 'X-Hub-Signature mis-match')
+    if (!verifyBody(GITHUB_SECRET, headers['x-hub-signature'] || '', body)) {
+      throw new HTTPError(403, 'X-Hub-Signature mis-match (GitHub)')
     }
   }
 
