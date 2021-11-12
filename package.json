@@ -5,7 +5,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "lint": "eslint \"**/*.js\""
+    "lint": "eslint ."
   },
   "author": "traP",
   "license": "MIT",
