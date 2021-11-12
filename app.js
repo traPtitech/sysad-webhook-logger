@@ -66,7 +66,7 @@ const sendMessage = (channelID, text) => {
   })
 }
 
-const format = text => text.replace(/<details>.+?<\/details>/gs, '')
+const format = text => text?.replace(/<details>.+?<\/details>/gs, '') ?? ''
 
 const createMdLink = (alt, href) => `[${alt}](${href})`
 const createIssueLink = issue =>
