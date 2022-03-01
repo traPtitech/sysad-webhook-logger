@@ -126,7 +126,7 @@ export const webhook = async (req, res) => {
     const content = format(pr.body)
 
     const text = createText(
-      `${createIssueLink(pr)}がマージされました`,
+      `:git_merged: ${createIssueLink(pr)}がマージされました`,
       {
         リポジトリ: createRepoLink(body.repository),
         PR作成者: createUserLink(user),
@@ -143,7 +143,7 @@ export const webhook = async (req, res) => {
     const content = format(issue.body)
 
     const text = createText(
-      `新しいissue${createIssueLink(issue)}が作成されました`,
+      `:git_issue_opened: 新しいissue${createIssueLink(issue)}が作成されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         issue作成者: createUserLink(user)
@@ -159,7 +159,7 @@ export const webhook = async (req, res) => {
     const content = format(issue.body)
 
     const text = createText(
-      `issue${createIssueLink(issue)}が編集されました`,
+      `:git_issue_opened: issue${createIssueLink(issue)}が編集されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         issue編集者: createUserLink(user)
@@ -175,7 +175,7 @@ export const webhook = async (req, res) => {
     const content = format(issue.body)
 
     const text = createText(
-      `issue${createIssueLink(issue)}が閉じられました`,
+      `:git_issue_closed: issue${createIssueLink(issue)}が閉じられました`,
       {
         リポジトリ: createRepoLink(body.repository),
         issueを閉じた人: createUserLink(user)
@@ -191,7 +191,7 @@ export const webhook = async (req, res) => {
     const content = format(issue.body)
 
     const text = createText(
-      `issue${createIssueLink(issue)}が再び開かれました`,
+      `:git_issue_opened: issue${createIssueLink(issue)}が再び開かれました`,
       {
         リポジトリ: createRepoLink(body.repository),
         issueを開けた人: createUserLink(user)
@@ -213,7 +213,7 @@ export const webhook = async (req, res) => {
     }
 
     const text = createText(
-      `issue${createIssueLink(issue)}にコメントが追加されました`,
+      `:comment: issue${createIssueLink(issue)}にコメントが追加されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         コメントした人: createUserLink(user)
@@ -235,7 +235,7 @@ export const webhook = async (req, res) => {
     }
 
     const text = createText(
-      `issue${createIssueLink(issue)}のコメントが変更されました`,
+      `:comment: issue${createIssueLink(issue)}のコメントが変更されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         コメントした人: createUserLink(user)
@@ -251,7 +251,7 @@ export const webhook = async (req, res) => {
     const content = format(pr.body)
 
     const text = createText(
-      `新しいPR${createIssueLink(pr)}が作成されました`,
+      `:git_pull_request: 新しいPR${createIssueLink(pr)}が作成されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         PR作成者: createUserLink(user)
@@ -272,7 +272,7 @@ export const webhook = async (req, res) => {
     }
 
     const text = createText(
-      `PR${createIssueLink(pr)}が編集されました`,
+      `:git_pull_request: PR${createIssueLink(pr)}が編集されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         PR編集者: createUserLink(user)
@@ -289,7 +289,7 @@ export const webhook = async (req, res) => {
     const reviewers = pr.requested_reviewers
 
     const text = createText(
-      `PR${createIssueLink(pr)}でレビューがリクエストされました`,
+      `:blue_circle: PR${createIssueLink(pr)}でレビューがリクエストされました`,
       {
         リポジトリ: createRepoLink(body.repository),
         リクエストした人: createUserLink(user),
@@ -307,7 +307,7 @@ export const webhook = async (req, res) => {
     const content = review.body ? format(review.body) : ''
 
     const text = createText(
-      `PR${createIssueLink(pr)}がレビューされました`,
+      `:blue_circle: PR${createIssueLink(pr)}がレビューされました`,
       {
         リポジトリ: createRepoLink(body.repository),
         レビューした人: createUserLink(user)
@@ -327,7 +327,9 @@ export const webhook = async (req, res) => {
     const content = format(comment.body)
 
     const text = createText(
-      `PR${createIssueLink(pr)}にレビューコメントが追加されました`,
+      `:blue_circle: PR${createIssueLink(
+        pr
+      )}にレビューコメントが追加されました`,
       {
         リポジトリ: createRepoLink(body.repository),
         コメントした人: createUserLink(user)
