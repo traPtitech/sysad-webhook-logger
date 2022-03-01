@@ -12,7 +12,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
           cache: 'npm'
       - name: check npm ci
         run: npm ci
@@ -26,7 +26,7 @@ jobs:
       - name: setup Node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
           cache: 'npm'
       - name: npm ci
         run: npm ci
