@@ -68,7 +68,11 @@ const sendMessage = (channelID, text) => {
 
 const format = text => text?.replace(/<details>.+?<\/details>/gs, '') ?? ''
 
-const createMdLink = (alt, href) => `[${alt}](${href})`
+const createMdLink = (alt, href) => {
+  // OGP表示をなくすためにプロトコル部分を消す
+  return `[${alt}](${href.replace(/^https?:/, '')})`
+}
+
 const createIssueLink = issue =>
   createMdLink(issue.title, issue.html_url || issue.url)
 const createRepoLink = repo => createMdLink(repo.name, repo.html_url)
