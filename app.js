@@ -76,7 +76,12 @@ const createMdLink = (alt, href) => {
 const createIssueLink = issue =>
   createMdLink(issue.title, issue.html_url || issue.url)
 const createRepoLink = repo => createMdLink(repo.name, repo.html_url)
-const createUserLink = user => createMdLink(user.login, user.html_url)
+const createUserLink = user => {
+  if (user.html_url) {
+    return createMdLink(user.login, user.html_url)
+  }
+  return user.login // giteaだとuser.html_urlが存在しない
+}
 
 const createText = (title, headData, content) => {
   const res = []
