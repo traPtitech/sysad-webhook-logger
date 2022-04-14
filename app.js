@@ -1,6 +1,6 @@
 import crypto from 'crypto'
-import fetch from 'node-fetch'
 import { STATUS_CODES } from 'http'
+import fetch from 'node-fetch'
 
 class HTTPError extends Error {
   constructor(code, message = STATUS_CODES[code]) {
@@ -284,7 +284,7 @@ export const webhook = async (req, res) => {
     res.send('OK')
   } else if (event === 'pull_request' && body.action === 'review_requested') {
     const pr = body.pull_request
-    const user = pr.user
+    const requester = body.sender
     const content = format(pr.body)
     const reviewers = pr.requested_reviewers
 
@@ -292,10 +292,10 @@ export const webhook = async (req, res) => {
       `:blue_circle: PR${createIssueLink(pr)}でレビューがリクエストされました`,
       {
         リポジトリ: createRepoLink(body.repository),
-        リクエストした人: createUserLink(user),
+        リクエストした人: createUserLink(requester),
         リクエストされた人: reviewers.map(createUserLink).join(', ')
       },
-      omitIfNeeded(user, content)
+      omitIfNeeded(requester, content)
     )
 
     await sendMessage(channelIDs['#t/S/l/pr'], text)
