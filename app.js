@@ -22,16 +22,19 @@ const channelIDs = {
 }
 
 // user.loginで指定
+const isAppBot = loginName => loginName.endsWith('[bot]')
 // コメントが追加/編集されてもメッセージ投稿しないユーザー
-const commentIgnoredUsers = [
-  'dependabot[bot]',
-  'dependabot-preview[bot]',
-  'codecov[bot]'
-]
+const commentIgnoredUsers = [isAppBot]
 // PRの本文を省略するユーザー
-const prBodyOmittedUsers = ['dependabot[bot]', 'dependabot-preview[bot]']
+const prBodyOmittedUsers = [isAppBot]
 // PRの編集がされてもメッセージを投稿しないユーザー
-const prEditIgnoredUsers = ['dependabot[bot]', 'dependabot-preview[bot]']
+const prEditIgnoredUsers = [isAppBot]
+
+const ignore = (loginName, ignoreList) =>
+  ignoreList.some(ignore => {
+    if (typeof ignore === 'function') return ignore(loginName)
+    else return ignore === loginName
+  })
 
 const verifyBody = (secret, signature, payload) => {
   const sign = `sha1=${crypto
@@ -92,7 +95,7 @@ const createText = (title, headData, content) => {
 }
 
 const omitIfNeeded = (user, content) =>
-  !prBodyOmittedUsers.includes(user.login) ? content : undefined
+  !ignore(user.login, prBodyOmittedUsers) ? content : undefined
 
 export const webhook = async (req, res) => {
   const headers = req.headers
@@ -201,7 +204,7 @@ export const webhook = async (req, res) => {
     const user = comment.user
     const content = format(comment.body)
 
-    if (commentIgnoredUsers.includes(user.login)) {
+    if (ignore(user.login, commentIgnoredUsers)) {
       res.send('OK')
       return
     }
@@ -223,7 +226,7 @@ export const webhook = async (req, res) => {
     const user = comment.user
     const content = format(comment.body)
 
-    if (commentIgnoredUsers.includes(user.login)) {
+    if (ignore(user.login, commentIgnoredUsers)) {
       res.send('OK')
       return
     }
@@ -260,7 +263,7 @@ export const webhook = async (req, res) => {
     const user = pr.user
     const content = format(pr.body)
 
-    if (prEditIgnoredUsers.includes(user.login)) {
+    if (ignore(user.login, prEditIgnoredUsers)) {
       res.send('OK')
       return
     }
