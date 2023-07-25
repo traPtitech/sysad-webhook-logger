@@ -13,14 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
+    - id: auth
+      name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
     - name: deploy
-      uses: google-github-actions/deploy-cloud-functions@main
+      uses: google-github-actions/deploy-cloud-functions@v1
       with:
         name: sysad-webhook-logger
         runtime: nodejs16
         entry_point: webhook
         memory_mb: 128
         region: asia-northeast1
-        credentials: ${{ secrets.GCP_SA_KEY }}
         env_vars: GITHUB_SECRET=${{ secrets.WEBHOOK_GITHUB_SECRET }},WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }},GITEA_SECRET=${{ secrets.GITEA_SECRET }}
-        project_id: ${{ secrets.GCP_PROJECT_ID }}
