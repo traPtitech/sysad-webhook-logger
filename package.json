@@ -10,7 +10,7 @@
   "author": "traP",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^3.2.1"
+    "node-fetch": "^3.2.10"
   },
   "engines": {
     "node": ">=16"
